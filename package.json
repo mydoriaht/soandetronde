@@ -1,0 +1,25 @@
+{
+  "name": "soandetronde",
+  "version": "1.0.0",
+  "description": "Sinh đề trắc nghiệm \"thay số\" (Toán 11 – lượng giác) kèm đáp án tra theo số phiếu",
+  "main": "tao_de.js",
+  "scripts": {
+    "tao-de": "node tao_de.js",
+    "kiem-tra": "python3 kiem_tra.py",
+    "test": "node tao_de.js && python3 kiem_tra.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mydoriaht/soandetronde.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mydoriaht/soandetronde/issues"
+  },
+  "homepage": "https://github.com/mydoriaht/soandetronde#readme",
+  "dependencies": {
+    "docx": "^9.8.1"
+  }
+}
