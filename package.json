@@ -6,7 +6,7 @@
   "scripts": {
     "tao-de": "node tao_de.js",
     "kiem-tra": "python3 kiem_tra.py",
-    "test": "node tao_de.js && python3 kiem_tra.py"
+    "test": "node tao_de.js && python3 kiem_tra.py && node test/chay_thu.js"
   },
   "repository": {
     "type": "git",

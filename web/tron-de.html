@@ -1,0 +1,262 @@
+<title>Trộn Đề Thay Số</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Patrick+Hand&display=swap">
+<style>
+/* Bố cục: bàn làm việc hai cột — bên trái là phiếu cấu hình như lề trái tờ đề, bên phải là kết quả trộn (kiểm tra, tải file, xấp đề). Điện thoại: một cột. */
+:root {
+  --paper: #f4f6fa; --card: #ffffff; --ink: #18233d; --muted: #5b6782; --line: #d6dde9;
+  --blue: #1f46c7; --blue-soft: #e5ebfb; --red: #cf3027; --red-soft: #fbe7e5; --green: #1d8048; --green-soft: #e1f3e8;
+  --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-pen: "Patrick Hand", "Comic Sans MS", "Segoe Print", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0e1320; --card: #161e31; --ink: #e5eaf5; --muted: #95a1bb; --line: #2a354f;
+  --blue: #86a2ff; --blue-soft: #1d2a4d; --red: #ff6d63; --red-soft: #3a1d1f; --green: #52c784; --green-soft: #173427; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0e1320; --card: #161e31; --ink: #e5eaf5; --muted: #95a1bb; --line: #2a354f;
+  --blue: #86a2ff; --blue-soft: #1d2a4d; --red: #ff6d63; --red-soft: #3a1d1f; --green: #52c784; --green-soft: #173427; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--font-body); padding-inline: 16px; padding-block: 24px 56px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+a { color: var(--blue); }
+
+.head { display: grid; gap: 6px; }
+.head h1 { font-size: clamp(24px, 4vw, 32px); font-weight: 700; letter-spacing: -0.02em; }
+.head h1 .pen { font-family: var(--font-pen); color: var(--red); font-weight: 400; font-size: 1.15em; letter-spacing: 0; }
+.head p { margin: 0; max-width: 64ch; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.card h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--blue); }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: 13px; font-weight: 600; }
+.field small { color: var(--muted); font-size: 12px; }
+input.txt { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 9px 11px; min-height: 42px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.inline { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.btn { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-weight: 600; padding: 0 14px; }
+.btn.pri { background: var(--blue); border-color: var(--blue); color: var(--card); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.err { color: var(--red); font-size: 13px; min-height: 1em; }
+
+.check { display: flex; gap: 12px; align-items: flex-start; border-radius: 10px; padding: 12px 14px; }
+.check.ok { background: var(--green-soft); }
+.check.bad { background: var(--red-soft); }
+.check b { display: block; }
+.check .dot { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: var(--card); }
+.check.ok .dot { background: var(--green); } .check.bad .dot { background: var(--red); }
+.check ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+
+.ma { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; }
+.ma .v { font-size: 22px; font-weight: 700; color: var(--blue); letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.ma small { display: block; color: var(--muted); font-size: 12px; }
+.dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 480px) { .dl, .pair { grid-template-columns: 1fr; } }
+.dl .btn { min-height: 56px; display: grid; justify-items: start; text-align: left; line-height: 1.3; padding: 8px 14px; }
+.dl .btn span { font-size: 12px; font-weight: 400; opacity: 0.85; }
+
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); }
+td.l, th.l { text-align: left; }
+td .ab { letter-spacing: 0.25em; font-weight: 700; }
+.tag { display: inline-block; border-radius: 6px; padding: 0 7px; font-weight: 700; font-size: 12px; }
+.tag.d1 { background: var(--blue); color: var(--card); }
+.tag.d2 { background: var(--blue-soft); color: var(--blue); }
+
+.xap { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.to { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--paper); font-size: 12px; display: grid; gap: 2px; }
+.to b { font-size: 16px; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--paper);
+  border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 600; max-width: calc(100% - 32px); z-index: 10; }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <h1>Trộn đề <span class="pen">thay số</span></h1>
+    <p>Từ đề gốc KTTX số 1 – Toán 11, mỗi học sinh nhận một tờ cùng bố cục nhưng khác số liệu và vị trí đáp án. Đáp án do máy tính ra và được kiểm tra lại độc lập trước khi cho tải file.</p>
+  </header>
+
+  <div class="grid">
+    <form class="card" id="cauHinh" autocomplete="off">
+      <h2>Thông tin in trên đề</h2>
+      <div class="field"><label for="truong">Trường</label><input class="txt" id="truong" maxlength="80"></div>
+      <div class="field"><label for="tenBai">Tên bài</label><input class="txt" id="tenBai" maxlength="80"></div>
+      <div class="field"><label for="thoiGian">Dòng thời gian</label><input class="txt" id="thoiGian" maxlength="80"></div>
+
+      <h2>Cách trộn</h2>
+      <div class="pair">
+        <div class="field"><label for="soPhieu">Số học sinh</label><input class="txt num" id="soPhieu" type="number" min="1" max="900" inputmode="numeric"><small>1–900 tờ</small></div>
+        <div class="field"><label for="soPB">Phiên bản mỗi đề</label><input class="txt num" id="soPB" type="number" min="2" max="6" inputmode="numeric"><small>2–6, tổng gấp đôi</small></div>
+      </div>
+      <div class="field">
+        <label for="hatGiong">Hạt giống</label>
+        <div class="inline"><input class="txt num" id="hatGiong" type="number" min="1" inputmode="numeric"><button class="btn" type="button" id="hatMoi">Số mới</button></div>
+        <small>Cùng hạt giống thì ra đúng bộ đề cũ. Đổi số để có bộ đề mới hoàn toàn.</small>
+      </div>
+      <div class="err" id="loiNhap" role="alert"></div>
+      <button class="btn pri" type="submit" id="tron">Trộn đề</button>
+    </form>
+
+    <section class="card" aria-labelledby="hKq">
+      <h2 id="hKq">Kết quả</h2>
+      <div class="check" id="kiemTra" aria-live="polite"></div>
+
+      <div class="ma">
+        <div><small>Mã chấm — nhập vào trang Chấm điểm</small><span class="v num" id="maCham">…</span></div>
+        <button class="btn" type="button" id="chepMa">Chép mã</button>
+      </div>
+
+      <div class="dl">
+        <button class="btn pri" type="button" id="taiDe" disabled>Tải file đề (.docx)<span id="taiDeSub">mỗi tờ một trang, đúng thứ tự phát</span></button>
+        <button class="btn" type="button" id="taiDA" disabled>Tải bảng đáp án (.docx)<span>tra theo số phiếu, cho giáo viên</span></button>
+      </div>
+      <p class="note">In file đề theo đúng thứ tự trang rồi phát lần lượt theo dãy, không xáo xấp. Chấm bài trên điện thoại ở trang <a href="https://claude.ai/artifact/PozheCk3dSdxcmvqViq5Gb" target="_blank" rel="noopener">Chấm điểm KTTX</a>.</p>
+
+      <h3 style="font-size:14px">Các phiên bản ẩn</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th class="l">Nhãn</th><th>Phiên bản</th><th>Phần I</th><th>Câu 5 (a–d)</th><th>Câu 6</th><th>Số tờ</th></tr></thead>
+          <tbody id="bangPB"></tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:14px">Xấp đề theo thứ tự phát <span class="muted" id="xapDem" style="font-weight:400"></span></h3>
+      <div class="xap" id="xap"></div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@9.8.1/dist/index.iife.js"></script>
+<script src="lib/de_toan11.js"></script>
+<script src="lib/kiem_tra.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const ls = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  const O = { ...DeToan11.THONG_TIN_MAC_DINH, ...DeToan11.MAC_DINH };
+  try { Object.assign(O, JSON.parse(ls.get('tronde:form') || '{}')); } catch {}
+  $('truong').value = O.truong; $('tenBai').value = O.tenBai; $('thoiGian').value = O.thoiGian;
+  $('soPhieu').value = O.soPhieu; $('soPB').value = O.soPhienBanMoiDe; $('hatGiong').value = O.hatGiong;
+
+  let boDe = null, dat = false;
+
+  function tron() {
+    $('loiNhap').textContent = '';
+    const cauHinh = { hatGiong: $('hatGiong').value, soPhieu: $('soPhieu').value, soPhienBanMoiDe: $('soPB').value };
+    try { boDe = DeToan11.taoBoDe(cauHinh); }
+    catch (e) { $('loiNhap').textContent = viet(e.message); return; }
+    ls.set('tronde:form', JSON.stringify({ ...thongTin(), ...boDe.cauHinh }));
+    const { loi } = KiemTra.kiemTra(DeToan11.duLieuKiemTra(boDe));
+    dat = loi.length === 0;
+    veKiemTra(loi); veKetQua();
+  }
+  const viet = (m) => m.replace('"soPhieu"', 'Số học sinh').replace('"soPhienBanMoiDe"', 'Số phiên bản').replace('"hatGiong"', 'Hạt giống');
+  const thongTin = () => ({ truong: $('truong').value.trim(), tenBai: $('tenBai').value.trim(), thoiGian: $('thoiGian').value.trim() });
+
+  function veKiemTra(loi) {
+    const el = $('kiemTra'); el.innerHTML = '';
+    el.className = 'check ' + (loi.length ? 'bad' : 'ok');
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.textContent = loi.length ? '!' : '✓';
+    const txt = document.createElement('div');
+    const b = document.createElement('b');
+    if (!loi.length) {
+      b.textContent = 'Kiểm tra độc lập: không có lỗi';
+      txt.append(b, `Đã tính lại đáp án của ${boDe.phienBan.length} phiên bản, đối chiếu ${boDe.to.length} tờ và các quy tắc chống hỏi bài.`);
+    } else {
+      b.textContent = `Kiểm tra phát hiện ${loi.length} lỗi, chưa cho tải file`;
+      const ul = document.createElement('ul');
+      loi.slice(0, 8).forEach((l) => { const li = document.createElement('li'); li.textContent = l; ul.append(li); });
+      txt.append(b, 'Hãy đổi hạt giống rồi trộn lại.', ul);
+    }
+    el.append(dot, txt);
+  }
+
+  function veKetQua() {
+    $('maCham').textContent = boDe.maCham;
+    $('taiDe').disabled = $('taiDA').disabled = !dat;
+    $('taiDeSub').textContent = `${boDe.to.length} trang, mỗi tờ một trang, đúng thứ tự phát`;
+    const dem = {};
+    boDe.to.forEach((t) => { const k = `${t.pb.de}-${t.pb.stt}`; dem[k] = (dem[k] || 0) + 1; });
+    const tb = $('bangPB'); tb.innerHTML = '';
+    for (const pb of boDe.phienBan) {
+      const tr = document.createElement('tr');
+      const o = (html, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.append(html); tr.append(td); };
+      const tag = document.createElement('span'); tag.className = `tag d${pb.de}`; tag.textContent = 'ĐỀ ' + pb.de;
+      o(tag, 'l');
+      o(String.fromCharCode(97 + pb.stt), 'num');
+      const ab = document.createElement('span'); ab.className = 'ab'; ab.textContent = DeToan11.khoaTN(pb); o(ab);
+      const ds = document.createElement('span'); ds.className = 'ab'; ds.textContent = DeToan11.khoaDS(pb).join(''); o(ds);
+      o(pb.c6.dapAn, 'num');
+      o(String(dem[`${pb.de}-${pb.stt}`] || 0), 'num');
+      tb.append(tr);
+    }
+    const xap = $('xap'); xap.innerHTML = '';
+    const HIEN = 24;
+    boDe.to.slice(0, HIEN).forEach((t) => {
+      const d = document.createElement('div'); d.className = 'to';
+      const tag = document.createElement('span'); tag.className = `tag d${t.pb.de}`; tag.textContent = `ĐỀ ${t.pb.de}`;
+      const so = document.createElement('b'); so.className = 'num'; so.textContent = t.soPhieu;
+      const th = document.createElement('span'); th.className = 'muted'; th.textContent = `Tờ ${t.thuTuPhat} · bản ${String.fromCharCode(97 + t.pb.stt)}`;
+      d.append(tag, so, th); xap.append(d);
+    });
+    $('xapDem').textContent = boDe.to.length > HIEN ? `(${HIEN} tờ đầu / ${boDe.to.length})` : `(${boDe.to.length} tờ)`;
+  }
+
+  // ───── Tải file ─────
+  let hen;
+  function toast(s) { const t = $('toast'); t.textContent = s; t.hidden = false; clearTimeout(hen); hen = setTimeout(() => { t.hidden = true; }, 2800); }
+  async function luuFile(ten, blob) {
+    const dl = window.claude?.use ? await window.claude.use('downloads') : null;
+    if (dl) {
+      try { await dl.save({ filename: ten, data: blob }); toast('Đã tải ' + ten); }
+      catch (e) { if (e?.code !== 'declined') toast('Không tải được: ' + (e?.message || e?.code)); }
+      return;
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = ten; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  }
+  async function tai(loai, nut) {
+    if (!boDe || !dat) return;
+    if (!window.docx) { toast('Chưa tải được thư viện tạo file Word. Kiểm tra mạng rồi tải lại trang.'); return; }
+    const cu = nut.firstChild.nodeValue; nut.disabled = true; nut.firstChild.nodeValue = 'Đang tạo file…';
+    try {
+      const files = DeToan11.taoFileWord(window.docx, boDe, thongTin());
+      const blob = await window.docx.Packer.toBlob(files[loai]);
+      const ten = loai === 'de' ? `De_${boDe.to.length}_phieu_${boDe.maCham}.docx` : `Dap_an_${boDe.maCham}.docx`;
+      await luuFile(ten, blob);
+    } catch (e) { toast('Lỗi khi tạo file: ' + e.message); }
+    finally { nut.firstChild.nodeValue = cu; nut.disabled = !dat; }
+  }
+  $('taiDe').addEventListener('click', (e) => tai('de', e.currentTarget));
+  $('taiDA').addEventListener('click', (e) => tai('dapAn', e.currentTarget));
+
+  $('chepMa').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(boDe.maCham); toast('Đã chép mã ' + boDe.maCham); }
+    catch { const r = document.createRange(); r.selectNodeContents($('maCham')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Mã đã được bôi đen, hãy chép thủ công'); }
+  });
+  $('hatMoi').addEventListener('click', () => {
+    const a = new Uint32Array(1); crypto.getRandomValues(a);
+    $('hatGiong').value = 100000 + (a[0] % 900000); tron();
+  });
+  $('cauHinh').addEventListener('submit', (e) => { e.preventDefault(); tron(); });
+  for (const id of ['truong', 'tenBai', 'thoiGian']) $(id).addEventListener('change', () => boDe && ls.set('tronde:form', JSON.stringify({ ...thongTin(), ...boDe.cauHinh })));
+
+  tron();
+})();
+</script>

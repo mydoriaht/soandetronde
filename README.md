@@ -4,13 +4,22 @@ Sinh đề kiểm tra "thay số" từ một đề gốc: mỗi học sinh nhậ
 
 Đề mẫu hiện tại: **Bài KTTX số 1 – Toán 11 (hàm số lượng giác)**, 6 câu, 15 phút.
 
+## Hai trang web
+
+- **Trộn đề thay số** (`web/tron-de.html`): nhập tên trường, số học sinh, số phiên bản và hạt giống, rồi bấm **Trộn đề**. Trang tự kiểm tra lại toàn bộ đáp án và chỉ cho tải file khi không có lỗi. Sau đó tải file đề và bảng đáp án dạng Word để gửi đi in. Trang cũng hiện **mã chấm**, ví dụ `20260929-50-6`.
+- **Chấm điểm KTTX** (`web/cham-diem.html`): dùng trên điện thoại. Nhập mã chấm một lần, sau đó với mỗi bài: gõ số phiếu, chạm đáp án học sinh chọn, bấm **Lưu điểm**. Điểm hiện ngay, bảng điểm xuất được ra file `.csv` để mở bằng Excel.
+
+Hai trang không cần gửi dữ liệu cho nhau: bộ đề chỉ phụ thuộc vào ba số trong mã chấm, nên trang chấm tự dựng lại đúng bảng đáp án. Cả hai trang dùng chung lõi `web/lib/de_toan11.js`. Bộ kiểm tra độc lập của trang web nằm trong `web/lib/kiem_tra.js`.
+
+Phần II có hai cách tính, chọn ở cuối trang chấm: mỗi ý đúng 1 điểm (mặc định), hoặc thang lũy tiến của Bộ GD&ĐT nhân 4 (đúng 1/2/3/4 ý được 0,4 / 1 / 2 / 4 điểm).
+
 ## Cách chạy
 
 ```bash
 npm install          # cài thư viện docx
 npm run tao-de       # sinh đề vào thư mục output/
 npm run kiem-tra     # kiểm tra độc lập (Python 3, không cần thư viện ngoài)
-npm test             # chạy cả hai
+npm test             # sinh đề + kiem_tra.py + test/chay_thu.js
 ```
 
 Kết quả trong `output/`:
