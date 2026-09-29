@@ -1,0 +1,451 @@
+<title>Trollde Chấm Điểm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Patrick+Hand&display=swap">
+<style>
+/* Bố cục: một cột hẹp như tờ phiếu chấm — ô số phiếu ở trên, lưới đáp án giữa, điểm bút đỏ ở dưới; bảng điểm theo sau. */
+:root {
+  --paper: #f4f6fa; --card: #ffffff; --ink: #18233d; --muted: #5b6782; --line: #d6dde9;
+  --blue: #1f46c7; --blue-soft: #e5ebfb; --red: #cf3027; --red-soft: #fbe7e5; --green: #1d8048; --green-soft: #e1f3e8;
+  --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-pen: "Patrick Hand", "Comic Sans MS", "Segoe Print", cursive;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0e1320; --card: #161e31; --ink: #e5eaf5; --muted: #95a1bb; --line: #2a354f;
+  --blue: #86a2ff; --blue-soft: #1d2a4d; --red: #ff6d63; --red-soft: #3a1d1f; --green: #52c784; --green-soft: #173427; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0e1320; --card: #161e31; --ink: #e5eaf5; --muted: #95a1bb; --line: #2a354f;
+  --blue: #86a2ff; --blue-soft: #1d2a4d; --red: #ff6d63; --red-soft: #3a1d1f; --green: #52c784; --green-soft: #173427; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--font-body); padding-inline: 16px; padding-block: 0 48px; }
+main { max-width: 560px; margin: 0 auto; display: grid; gap: 16px; }
+h1, h2 { margin: 0; text-wrap: balance; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-block: 12px 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); margin-inline: -16px; padding-inline: 16px; }
+header.top h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.chip { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.chip .ma { color: var(--blue); }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; min-width: 0; }
+.stat b { display: block; font-size: 20px; font-weight: 700; }
+.stat span { font-size: 12px; color: var(--muted); }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; }
+label.lb { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.row2 { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: end; }
+.field { display: grid; gap: 4px; min-width: 0; }
+input.txt { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 10px 12px; min-height: 46px; }
+input#soPhieu { font-size: 26px; font-weight: 700; letter-spacing: 0.12em; text-align: center; padding: 4px 8px; }
+.phieu-info { font-size: 13px; min-height: 20px; }
+.phieu-info .de { display: inline-block; background: var(--blue); color: var(--card); font-weight: 700; border-radius: 6px; padding: 1px 8px; margin-right: 6px; }
+.phieu-info.loi { color: var(--red); }
+
+.phan { display: grid; gap: 8px; }
+.phan-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.phan-h h2 { font-size: 13px; font-weight: 700; color: var(--blue); letter-spacing: 0.03em; }
+.q { display: grid; grid-template-columns: 58px 1fr 54px; align-items: center; gap: 8px; }
+.q .ten { font-weight: 600; font-size: 14px; }
+.seg { display: grid; gap: 6px; }
+.seg.c4 { grid-template-columns: repeat(4, 1fr); }
+.seg.c2 { grid-template-columns: repeat(2, 1fr); }
+.seg button { min-height: 44px; border: 1px solid var(--line); background: var(--paper); border-radius: 8px; font-weight: 700; font-size: 16px; }
+.seg button[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--card); }
+.seg button[aria-pressed="true"].sai { background: var(--red); border-color: var(--red); }
+.seg button[aria-pressed="true"].dung { background: var(--green); border-color: var(--green); }
+.seg button.goiY { box-shadow: inset 0 0 0 2px var(--green); }
+.mark { font-size: 13px; font-weight: 700; text-align: right; white-space: nowrap; }
+.mark.ok { color: var(--green); } .mark.no { color: var(--red); }
+.q6 { grid-template-columns: 58px 1fr 54px; }
+
+.diem { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px dashed var(--line); padding-top: 12px; }
+.diem .so { font-family: var(--font-pen); color: var(--red); font-size: 56px; line-height: 0.9; }
+.diem .so small { font-size: 24px; color: var(--muted); }
+.diem .ct { font-size: 13px; color: var(--muted); text-align: right; }
+.actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.btn { min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-weight: 600; }
+.btn.pri { background: var(--blue); border-color: var(--blue); color: var(--card); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.list { display: grid; }
+.item { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; border-bottom: 1px solid var(--line); }
+.item .open { display: grid; grid-template-columns: 48px 1fr auto; gap: 10px; align-items: center; min-width: 0; border: 0; background: none; text-align: left; padding: 10px 4px; border-radius: 8px; }
+.item .open:hover { background: var(--paper); }
+.item:last-child { border-bottom: 0; }
+.item .sp { font-weight: 700; }
+.item .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .pt { font-family: var(--font-pen); color: var(--red); font-size: 26px; line-height: 1; min-width: 40px; text-align: right; }
+.item button.x { border: 0; background: none; color: var(--muted); font-size: 12px; padding: 8px 6px; min-height: 36px; }
+.item button.x.hoi { color: var(--red); font-weight: 700; }
+.empty { padding: 18px 4px; color: var(--muted); font-size: 14px; }
+
+.setup { display: grid; gap: 10px; }
+.setup .inline { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.opts { display: grid; gap: 8px; font-size: 14px; }
+.opts label { display: flex; gap: 8px; align-items: flex-start; }
+.status { font-size: 12px; color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--paper);
+  border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 600; max-width: calc(100% - 32px); z-index: 10; }
+@media (max-width: 380px) { .row2 { grid-template-columns: 110px 1fr; } .q, .q6 { grid-template-columns: 50px 1fr 46px; } }
+@media (prefers-reduced-motion: no-preference) { .seg button { transition: background .12s, border-color .12s; } }
+</style>
+
+<main>
+  <header class="top">
+    <h1>Trollde <span style="font-weight:500;color:var(--muted)">chấm</span></h1>
+    <button class="chip" id="doiBo" type="button" aria-controls="caiDat">Mã <span class="ma num" id="maHien">…</span></button>
+  </header>
+
+  <section class="stats" aria-label="Tổng quan">
+    <div class="stat"><b class="num" id="stDaCham">0/0</b><span>Đã chấm</span></div>
+    <div class="stat"><b class="num" id="stTB">–</b><span>Điểm trung bình</span></div>
+    <div class="stat"><b class="num" id="stCao">–</b><span>Cao nhất / thấp nhất</span></div>
+  </section>
+
+  <form class="card" id="phieu" autocomplete="off">
+    <div class="row2">
+      <div class="field">
+        <label class="lb" for="soPhieu">Số phiếu</label>
+        <input class="txt num" id="soPhieu" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="___" aria-describedby="phieuInfo">
+      </div>
+      <div class="field">
+        <label class="lb" for="hoTen">Họ tên (không bắt buộc)</label>
+        <input class="txt" id="hoTen" maxlength="60" placeholder="Nguyễn Văn A">
+      </div>
+    </div>
+    <div class="phieu-info muted" id="phieuInfo" aria-live="polite">Nhập 3 chữ số in ở góc phải tờ đề.</div>
+
+    <div class="phan">
+      <div class="phan-h"><h2>PHẦN I · Trắc nghiệm</h2><span class="muted num" id="dI"></span></div>
+      <div id="gridI"></div>
+    </div>
+    <div class="phan">
+      <div class="phan-h"><h2>PHẦN II · Câu 5 đúng sai</h2><span class="muted num" id="dII"></span></div>
+      <div id="gridII"></div>
+    </div>
+    <div class="phan">
+      <div class="phan-h"><h2>PHẦN III · Trả lời ngắn</h2><span class="muted num" id="dIII"></span></div>
+      <div class="q q6">
+        <span class="ten">Câu 6</span>
+        <input class="txt num" id="cau6" inputmode="decimal" maxlength="6" placeholder="vd 0,4" aria-label="Đáp án câu 6">
+        <span class="mark" id="mk6"></span>
+      </div>
+    </div>
+
+    <div class="diem">
+      <div class="so num" id="tong">–<small>/10</small></div>
+      <div class="ct" id="ghiChu">Chọn đáp án học sinh ghi trên phiếu.</div>
+    </div>
+    <div class="actions">
+      <button class="btn" type="button" id="xoaChon">Làm lại</button>
+      <button class="btn pri" type="submit" id="luu" disabled>Lưu điểm</button>
+    </div>
+    <label class="opts" style="font-size:13px"><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="hienDA"> Hiện đáp án đúng khi chưa chọn</span></label>
+  </form>
+
+  <section class="card" aria-labelledby="hBang">
+    <div class="phan-h"><h2 id="hBang" style="font-size:15px;color:var(--ink)">Bảng điểm</h2>
+      <button class="btn" type="button" id="xuat" style="min-height:36px;padding:0 12px;font-size:13px">Xuất .csv</button></div>
+    <div class="list" id="bang"></div>
+  </section>
+
+  <section class="card" id="caiDat" aria-labelledby="hCaiDat">
+    <h2 id="hCaiDat" style="font-size:15px">Bộ đề và cách tính điểm</h2>
+    <div class="setup">
+      <label class="lb" for="maCham">Mã chấm</label>
+      <div class="inline">
+        <input class="txt num" id="maCham" inputmode="numeric" placeholder="20260929-50-6">
+        <button class="btn pri" type="button" id="moBo" style="padding:0 16px">Mở</button>
+      </div>
+      <div class="status" id="maLoi">Mã in ở đầu file đáp án và trên trang Trollde Trộn Đề.</div>
+      <div class="status">Cần bộ đề mới? Mở trang <a href="https://claude.ai/artifact/Qf4Cxsfsx8p2wAC4voHVB2" target="_blank" rel="noopener" style="color:var(--blue)">Trollde Trộn Đề</a>.</div>
+    </div>
+    <div class="opts" role="radiogroup" aria-label="Cách tính phần II">
+      <label><input type="radio" name="cachDS" value="moiY" checked> <span>Phần II: mỗi ý đúng 1 điểm</span></label>
+      <label><input type="radio" name="cachDS" value="bgd"> <span>Phần II: thang Bộ GD&amp;ĐT — đúng 1/2/3/4 ý được 0,4 / 1 / 2 / 4 điểm</span></label>
+    </div>
+    <div class="status" id="khoTT">Đang kết nối nơi lưu…</div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="lib/de_toan11.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const MA_MAC_DINH = '20260929-50-6';
+  const ls = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  // ───── Nơi lưu: db (đồng bộ theo tài khoản, riêng tư) hoặc máy này ─────
+  const khoMay = {
+    ten: 'may',
+    async load(ma) { try { return JSON.parse(ls.get('chamdiem:bo:' + ma) || 'null'); } catch { return null; } },
+    async save(ma, data) { ls.set('chamdiem:bo:' + ma, JSON.stringify(data)); },
+    watch() { return () => {}; },
+  };
+  async function taoKhoDb() {
+    if (!window.claude?.use) return null;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return null;
+    const uid = await user.id();
+    if (!uid) return null;
+    const ref = (ma) => db.collection('data/users/' + uid).doc('bo-' + ma);
+    let hang = Promise.resolve();
+    return {
+      ten: 'db',
+      async load(ma) { const s = await ref(ma).get(); return s.exists ? s.data() : null; },
+      save(ma, data) { hang = hang.catch(() => {}).then(() => ref(ma).set(data)); return hang; },
+      watch(ma, cb) { return ref(ma).onSnapshot((s) => cb(s.exists ? s.data() : null), () => {}); },
+    };
+  }
+  let kho = null;
+  const khoSan = (async () => {
+    try { kho = (await taoKhoDb()) || khoMay; } catch { kho = khoMay; }
+    $('khoTT').textContent = kho.ten === 'db'
+      ? 'Điểm được lưu riêng cho tài khoản của bạn, mở trên máy tính hay điện thoại đều thấy.'
+      : 'Điểm chỉ lưu trên trình duyệt này. Nhớ bấm "Xuất .csv" sau khi chấm xong.';
+    return kho;
+  })();
+
+  // ───── Trạng thái ─────
+  let ma = null, bang = {}, tongSo = 0, bai = {}, huyTheoDoi = () => {};
+  let cachDS = ls.get('chamdiem:cachDS') === 'bgd' ? 'bgd' : 'moiY';
+  let form = moi();
+  function moi() { return { sp: '', ten: '', tn: [null, null, null, null], ds: [null, null, null, null], cau6: '', daLuu: false }; }
+  const tuBai = (sp) => { const cu = bai[sp]; return { sp, ten: cu.ten || '', tn: [...cu.tn], ds: [...cu.ds], cau6: cu.cau6 || '', daLuu: true }; };
+  const dapAnHienTai = () => bang[form.sp] || null;
+  const vs = DeToan11.vietSo;
+
+  // ───── Dựng lưới đáp án một lần ─────
+  function dungLuoi() {
+    const gI = $('gridI'), gII = $('gridII');
+    ['1', '2', '3', '4'].forEach((c, i) => gI.append(dong(`Câu ${c}`, ['A', 'B', 'C', 'D'], 'tn', i)));
+    ['a', 'b', 'c', 'd'].forEach((c, i) => gII.append(dong(`Ý ${c})`, ['Đ', 'S'], 'ds', i)));
+    gI.style.display = gII.style.display = 'grid'; gI.style.gap = gII.style.gap = '8px';
+  }
+  function dong(ten, luaChon, phan, i) {
+    const r = document.createElement('div'); r.className = 'q';
+    const t = document.createElement('span'); t.className = 'ten'; t.textContent = ten;
+    const s = document.createElement('div'); s.className = 'seg ' + (luaChon.length === 4 ? 'c4' : 'c2');
+    s.setAttribute('role', 'group'); s.setAttribute('aria-label', ten);
+    for (const l of luaChon) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = l;
+      b.dataset.phan = phan; b.dataset.i = i; b.dataset.v = l; b.setAttribute('aria-pressed', 'false');
+      s.append(b);
+    }
+    const m = document.createElement('span'); m.className = 'mark'; m.id = `mk-${phan}-${i}`;
+    r.append(t, s, m);
+    return r;
+  }
+
+  // ───── Vẽ phiếu đang chấm ─────
+  function veForm() {
+    const da = dapAnHienTai();
+    const hienDA = $('hienDA').checked;
+    const info = $('phieuInfo');
+    info.classList.remove('loi');
+    if (!form.sp) info.textContent = 'Nhập 3 chữ số in ở góc phải tờ đề.';
+    else if (!da) {
+      info.textContent = form.sp.length < 3 ? 'Nhập đủ 3 chữ số.' : `Không có số phiếu ${form.sp} trong bộ đề ${ma}.`;
+      if (form.sp.length === 3) info.classList.add('loi');
+    } else {
+      info.innerHTML = '';
+      const d = document.createElement('span'); d.className = 'de'; d.textContent = 'ĐỀ ' + da.de;
+      info.append(d, `Tờ thứ ${da.thuTuPhat} trong xấp` + (bai[form.sp] ? ' · đã chấm, lưu lại sẽ ghi đè' : ''));
+    }
+    const kq = da ? DeToan11.chamDiem(da, form, cachDS) : null;
+    for (const b of document.querySelectorAll('.seg button')) {
+      const { phan, i, v } = b.dataset;
+      const chon = form[phan][i] === v;
+      b.setAttribute('aria-pressed', String(chon));
+      b.classList.toggle('dung', !!(chon && da && da[phan][i] === v));
+      b.classList.toggle('sai', !!(chon && da && da[phan][i] !== v));
+      b.classList.toggle('goiY', !!(da && hienDA && !form[phan][i] && da[phan][i] === v));
+    }
+    for (const phan of ['tn', 'ds']) {
+      for (let i = 0; i < 4; i++) {
+        const m = $(`mk-${phan}-${i}`);
+        if (!da || !form[phan][i]) { m.textContent = ''; m.className = 'mark'; continue; }
+        const ok = kq[phan][i];
+        m.textContent = ok ? '✓' : `✗ ${da[phan][i]}`;
+        m.className = 'mark ' + (ok ? 'ok' : 'no');
+      }
+    }
+    const m6 = $('mk6');
+    if (!da || !form.cau6.trim()) { m6.textContent = hienDA && da ? da.cau6 : ''; m6.className = 'mark muted'; }
+    else { m6.textContent = kq.cau6 ? '✓' : `✗ ${da.cau6}`; m6.className = 'mark ' + (kq.cau6 ? 'ok' : 'no'); }
+    $('dI').textContent = kq ? `${vs(kq.diemTN)}/4 đ` : '';
+    $('dII').textContent = kq ? `${vs(kq.diemDS)}/4 đ` : '';
+    $('dIII').textContent = kq ? `${vs(kq.diem6)}/2 đ` : '';
+    $('tong').firstChild.nodeValue = kq ? vs(kq.tong) : '–';
+    const chuaChon = form.tn.filter((x) => !x).length + form.ds.filter((x) => !x).length + (form.cau6.trim() ? 0 : 1);
+    $('ghiChu').textContent = !kq ? 'Chọn đáp án học sinh ghi trên phiếu.'
+      : chuaChon ? `Còn ${chuaChon} ô để trống (tính 0 điểm).` : 'Đã nhập đủ.';
+    $('luu').disabled = !da || !kho;
+  }
+
+  // ───── Bảng điểm & tổng quan ─────
+  function diemCua(sp) { const da = bang[sp]; return da ? DeToan11.chamDiem(da, bai[sp], cachDS).tong : null; }
+  function veBang() {
+    const ds = Object.keys(bai).filter((sp) => bang[sp]).sort((a, b) => a - b);
+    const diem = ds.map(diemCua);
+    $('stDaCham').textContent = `${ds.length}/${tongSo}`;
+    $('stTB').textContent = diem.length ? vs(diem.reduce((a, b) => a + b, 0) / diem.length) : '–';
+    $('stCao').textContent = diem.length ? `${vs(Math.max(...diem))} / ${vs(Math.min(...diem))}` : '–';
+    const el = $('bang'); el.innerHTML = '';
+    if (!ds.length) {
+      const e = document.createElement('div'); e.className = 'empty';
+      e.textContent = 'Chưa có bài nào. Nhập số phiếu ở trên, chọn đáp án rồi bấm "Lưu điểm" — bài đã chấm sẽ hiện ở đây.';
+      el.append(e); return;
+    }
+    ds.forEach((sp, k) => {
+      const r = document.createElement('div'); r.className = 'item';
+      const open = document.createElement('button'); open.type = 'button'; open.className = 'open'; open.dataset.mo = sp;
+      open.setAttribute('aria-label', `Mở lại phiếu ${sp}`);
+      const a = document.createElement('span'); a.className = 'sp num'; a.textContent = sp;
+      const b = document.createElement('span'); b.className = 'nm';
+      b.textContent = (bai[sp].ten || 'Chưa ghi tên');
+      if (!bai[sp].ten) b.classList.add('muted');
+      const c = document.createElement('span'); c.className = 'pt num'; c.textContent = vs(diem[k]);
+      open.append(a, b, c);
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.dataset.xoa = sp; x.textContent = 'Xoá';
+      r.append(open, x);
+      el.append(r);
+    });
+  }
+
+  // ───── Mở bộ đề ─────
+  async function moBoDe(maMoi) {
+    let cauHinh;
+    try { cauHinh = DeToan11.docMaCham(maMoi); } catch (e) { $('maLoi').textContent = e.message; $('maLoi').style.color = 'var(--red)'; return false; }
+    $('maLoi').style.color = ''; $('maLoi').textContent = 'Mã in ở đầu file đáp án và trên trang Trollde Trộn Đề.';
+    const boDe = DeToan11.taoBoDe(cauHinh);
+    ma = boDe.maCham; bang = DeToan11.bangDapAn(boDe); tongSo = boDe.to.length; bai = {};
+    ls.set('chamdiem:ma', ma);
+    $('maHien').textContent = ma; $('maCham').value = ma;
+    form = moi(); napForm(); veForm(); veBang();
+    huyTheoDoi();
+    const k = await khoSan;
+    const maLuc = ma;
+    const data = await k.load(maLuc).catch(() => null);
+    if (maLuc !== ma) return true;
+    bai = { ...(data?.bai || {}) }; veBang(); veForm();
+    huyTheoDoi = k.watch(maLuc, (d) => { if (maLuc === ma && d) { bai = { ...(d.bai || {}) }; veBang(); veForm(); } });
+    return true;
+  }
+
+  function napForm() {
+    $('soPhieu').value = form.sp; $('hoTen').value = form.ten; $('cau6').value = form.cau6;
+  }
+
+  async function ghi(thongBao) {
+    const k = await khoSan;
+    const goi = { maCham: ma, capNhat: new Date().toISOString(), bai };
+    try { await k.save(ma, goi); if (thongBao) toast(thongBao); }
+    catch (e) {
+      if (k !== khoMay) {
+        kho = khoMay; await khoMay.save(ma, goi);
+        $('khoTT').textContent = 'Không ghi được vào tài khoản, điểm đang lưu trên trình duyệt này. Nhớ bấm "Xuất .csv".';
+        if (thongBao) toast(thongBao + ' (trên máy này)');
+      } else toast('Không lưu được: ' + (e?.message || 'lỗi không rõ'));
+    }
+  }
+
+  let hen;
+  function toast(s) { const t = $('toast'); t.textContent = s; t.hidden = false; clearTimeout(hen); hen = setTimeout(() => { t.hidden = true; }, 2600); }
+
+  // ───── Sự kiện ─────
+  $('soPhieu').addEventListener('input', (e) => {
+    const sp = e.target.value.replace(/\D/g, '').slice(0, 3);
+    e.target.value = sp;
+    if (bai[sp] && bang[sp]) { form = tuBai(sp); napForm(); }      // phiếu đã chấm: nạp lại để sửa
+    else if (form.daLuu) { form = { ...moi(), sp }; napForm(); }   // rời phiếu đã chấm: bắt đầu tờ mới
+    else form.sp = sp;                                             // giữ các ô đã chọn trước khi gõ số phiếu
+    veForm();
+  });
+  $('hoTen').addEventListener('input', (e) => { form.ten = e.target.value; });
+  $('cau6').addEventListener('input', (e) => { form.cau6 = e.target.value; veForm(); });
+  document.querySelector('#phieu').addEventListener('click', (e) => {
+    const b = e.target.closest('.seg button'); if (!b) return;
+    const { phan, i, v } = b.dataset;
+    form[phan][i] = form[phan][i] === v ? null : v;
+    veForm();
+  });
+  $('hienDA').addEventListener('change', veForm);
+  $('xoaChon').addEventListener('click', () => { form = moi(); napForm(); veForm(); $('soPhieu').focus(); });
+  $('phieu').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const da = dapAnHienTai(); if (!da) return;
+    const sp = form.sp;
+    bai = { ...bai, [sp]: { ten: form.ten.trim(), tn: [...form.tn], ds: [...form.ds], cau6: form.cau6.trim(), luc: new Date().toISOString() } };
+    const d = diemCua(sp);
+    form = moi(); napForm(); veForm(); veBang();
+    $('soPhieu').focus();
+    await ghi(`Đã lưu phiếu ${sp}: ${vs(d)} điểm`);
+  });
+  $('bang').addEventListener('click', async (e) => {
+    const mo = e.target.closest('[data-mo]');
+    if (mo) {
+      form = tuBai(mo.dataset.mo);
+      napForm(); veForm();
+      $('phieu').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      return;
+    }
+    const x = e.target.closest('[data-xoa]'); if (!x) return;
+    if (!x.classList.contains('hoi')) {
+      x.classList.add('hoi'); x.textContent = 'Xoá thật?';
+      setTimeout(() => { x.classList.remove('hoi'); x.textContent = 'Xoá'; }, 3000);
+      return;
+    }
+    const sp = x.dataset.xoa;
+    const conLai = { ...bai }; delete conLai[sp]; bai = conLai;
+    veBang(); veForm();
+    await ghi(`Đã xoá phiếu ${sp}`);
+  });
+  $('moBo').addEventListener('click', async () => { if (await moBoDe($('maCham').value)) toast('Đã mở bộ đề ' + ma); });
+  $('maCham').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('moBo').click(); } });
+  $('doiBo').addEventListener('click', () => { $('caiDat').scrollIntoView(); $('maCham').focus(); });
+  for (const r of document.querySelectorAll('input[name="cachDS"]')) {
+    r.checked = r.value === cachDS;
+    r.addEventListener('change', () => { cachDS = r.value; ls.set('chamdiem:cachDS', cachDS); veForm(); veBang(); });
+  }
+
+  // ───── Xuất CSV ─────
+  $('xuat').addEventListener('click', async () => {
+    const ds = Object.keys(bai).filter((sp) => bang[sp]).sort((a, b) => a - b);
+    if (!ds.length) { toast('Chưa có bài nào để xuất'); return; }
+    const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
+    const dongs = [['Số phiếu', 'Họ tên', 'Đề', 'Phần I', 'Phần II', 'Phần III', 'Tổng', 'Bài làm phần I', 'Bài làm phần II', 'Bài làm câu 6'].map(q).join(',')];
+    for (const sp of ds) {
+      const b = bai[sp], da = bang[sp], kq = DeToan11.chamDiem(da, b, cachDS);
+      dongs.push([sp, b.ten || '', da.de, vs(kq.diemTN), vs(kq.diemDS), vs(kq.diem6), vs(kq.tong),
+        b.tn.map((x) => x || '-').join(''), b.ds.map((x) => x || '-').join(''), b.cau6 || ''].map(q).join(','));
+    }
+    const csv = '﻿' + dongs.join('\r\n');
+    const ten = `bang-diem-${ma}.csv`;
+    const dl = window.claude?.use ? await window.claude.use('downloads') : null;
+    if (dl) {
+      try { await dl.save({ filename: ten, data: csv }); toast('Đã xuất ' + ten); }
+      catch (e) { if (e?.code !== 'declined') toast('Không xuất được file: ' + (e?.message || e?.code)); }
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = ten; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  });
+
+  dungLuoi();
+  moBoDe(ls.get('chamdiem:ma') || MA_MAC_DINH);
+})();
+</script>
