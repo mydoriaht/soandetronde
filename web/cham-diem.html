@@ -1,4 +1,4 @@
-<title>Chấm Điểm KTTX</title>
+<title>Trollde Chấm Điểm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Patrick+Hand&display=swap">
 <style>
@@ -99,7 +99,7 @@ input#soPhieu { font-size: 26px; font-weight: 700; letter-spacing: 0.12em; text-
 
 <main>
   <header class="top">
-    <h1>Chấm điểm KTTX</h1>
+    <h1>Trollde <span style="font-weight:500;color:var(--muted)">chấm</span></h1>
     <button class="chip" id="doiBo" type="button" aria-controls="caiDat">Mã <span class="ma num" id="maHien">…</span></button>
   </header>
 
@@ -164,8 +164,8 @@ input#soPhieu { font-size: 26px; font-weight: 700; letter-spacing: 0.12em; text-
         <input class="txt num" id="maCham" inputmode="numeric" placeholder="20260929-50-6">
         <button class="btn pri" type="button" id="moBo" style="padding:0 16px">Mở</button>
       </div>
-      <div class="status" id="maLoi">Mã in ở đầu file đáp án và trên trang Trộn đề.</div>
-      <div class="status">Cần bộ đề mới? Mở trang <a href="https://claude.ai/artifact/Qf4Cxsfsx8p2wAC4voHVB2" target="_blank" rel="noopener" style="color:var(--blue)">Trộn đề thay số</a>.</div>
+      <div class="status" id="maLoi">Mã in ở đầu file đáp án và trên trang Trollde Trộn Đề.</div>
+      <div class="status">Cần bộ đề mới? Mở trang <a href="https://claude.ai/artifact/Qf4Cxsfsx8p2wAC4voHVB2" target="_blank" rel="noopener" style="color:var(--blue)">Trollde Trộn Đề</a>.</div>
     </div>
     <div class="opts" role="radiogroup" aria-label="Cách tính phần II">
       <label><input type="radio" name="cachDS" value="moiY" checked> <span>Phần II: mỗi ý đúng 1 điểm</span></label>
@@ -329,7 +329,7 @@ input#soPhieu { font-size: 26px; font-weight: 700; letter-spacing: 0.12em; text-
   async function moBoDe(maMoi) {
     let cauHinh;
     try { cauHinh = DeToan11.docMaCham(maMoi); } catch (e) { $('maLoi').textContent = e.message; $('maLoi').style.color = 'var(--red)'; return false; }
-    $('maLoi').style.color = ''; $('maLoi').textContent = 'Mã in ở đầu file đáp án và trên trang Trộn đề.';
+    $('maLoi').style.color = ''; $('maLoi').textContent = 'Mã in ở đầu file đáp án và trên trang Trollde Trộn Đề.';
     const boDe = DeToan11.taoBoDe(cauHinh);
     ma = boDe.maCham; bang = DeToan11.bangDapAn(boDe); tongSo = boDe.to.length; bai = {};
     ls.set('chamdiem:ma', ma);

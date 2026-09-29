@@ -1,13 +1,13 @@
-# soandetronde
+# trollde
 
-Sinh đề kiểm tra "thay số" từ một đề gốc: mỗi học sinh nhận một tờ có cùng bố cục nhưng khác số liệu và khác vị trí đáp án đúng. Mọi đáp án đều do code tính, không do AI đoán.
+**Trollde** sinh đề kiểm tra "thay số" từ một đề gốc: mỗi học sinh nhận một tờ có cùng bố cục nhưng khác số liệu và khác vị trí đáp án đúng. Mọi đáp án đều do code tính, không do AI đoán.
 
 Đề mẫu hiện tại: **Bài KTTX số 1 – Toán 11 (hàm số lượng giác)**, 6 câu, 15 phút.
 
 ## Hai trang web
 
-- **Trộn đề thay số** (`web/tron-de.html`): nhập tên trường, số học sinh, số phiên bản và hạt giống, rồi bấm **Trộn đề**. Trang tự kiểm tra lại toàn bộ đáp án và chỉ cho tải file khi không có lỗi. Sau đó tải file đề và bảng đáp án dạng Word để gửi đi in. Trang cũng hiện **mã chấm**, ví dụ `20260929-50-6`.
-- **Chấm điểm KTTX** (`web/cham-diem.html`): dùng trên điện thoại. Nhập mã chấm một lần, sau đó với mỗi bài: gõ số phiếu, chạm đáp án học sinh chọn, bấm **Lưu điểm**. Điểm hiện ngay, bảng điểm xuất được ra file `.csv` để mở bằng Excel.
+- **Trollde Trộn Đề** (`web/tron-de.html`): nhập tên trường, số học sinh, số phiên bản và hạt giống, rồi bấm **Trộn đề**. Trang tự kiểm tra lại toàn bộ đáp án và chỉ cho tải file khi không có lỗi. Sau đó tải file đề và bảng đáp án dạng Word để gửi đi in. Trang cũng hiện **mã chấm**, ví dụ `20260929-50-6`.
+- **Trollde Chấm Điểm** (`web/cham-diem.html`): dùng trên điện thoại. Nhập mã chấm một lần, sau đó với mỗi bài: gõ số phiếu, chạm đáp án học sinh chọn, bấm **Lưu điểm**. Điểm hiện ngay, bảng điểm xuất được ra file `.csv` để mở bằng Excel.
 
 Hai trang không cần gửi dữ liệu cho nhau: bộ đề chỉ phụ thuộc vào ba số trong mã chấm, nên trang chấm tự dựng lại đúng bảng đáp án. Cả hai trang dùng chung lõi `web/lib/de_toan11.js`. Bộ kiểm tra độc lập của trang web nằm trong `web/lib/kiem_tra.js`.
 
